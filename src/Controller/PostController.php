@@ -14,42 +14,39 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 final class PostController extends AbstractController
 {
     #[Route('/post', name: 'post_index', methods:['GET'])]
-    public function index(PostRepository $postRepo): Response
+    public function index(PostRepository $postRepos): Response
     {
-        $posts = $postRepo->findAll();
+        $posts = $postRepos->findAll();
 
         return $this->render('post/index.html.twig',[
-            'posts'=> $posts,
+        'posts'=>$posts
         ]);
-
-        
     }
-    
-      // Route pour créer un nouveau post
+
+
+
     #[Route('/post/create', name: 'post_create', methods:['GET','POST'])]
 
-    public function create(Request $request, EntityManagerInterface $em):Response
+    public function create(Request $request,EntityManagerInterface $em):Response
 
-{    // Création d'un nouvel objet Post
-    $post = new Post();
+{  
+$post = new Post();
 
+$form = $this->createForm(PostType::class,$post);
+$form->handleRequest($request);
 
-    // Création du formulaire basé sur le type PostType
-    $form = $this->createForm(PostType::class,$post);
-    $form->handleRequest($request);
-
-    // Si le formulaire est soumis et valide
-    if($form->isSubmitted()&& $form->isValid())
-    {   //envoie du formulaire
-        $em->persist($post);
-        $em->flush();
-        return $this->redirectToRoute('post_index');
-    }
-     // Redirection vers la page listant tous les posts
-    return $this->render('post/create.html.twig',[
-        'form'=>$form->createView()
-    ]);
+if($form->isSubmitted() && $form->isValid())
+{
+    $em->persist($post);
+    $em->flush();
+    return $this->redirectToRoute('post_index');
 }
+return $this->render('post/create.html.twig',[
+    'form'=>$form->createView()
+]);
+}
+
+
 
 #[Route('post/{id}/remove',name: 'post_remove', methods:['POST'])]
 public function remove(EntityManagerInterface $em, Post $post, Request $request):Response
@@ -62,9 +59,36 @@ if ($this->isCsrfTokenValid('delete'.$post->getId(),$request->request->get('_tok
     $em->flush();
 }
 return $this->redirectToRoute('post_index');
-    
+}
 
+
+
+
+#[Route('/post/{id}/edit', name: 'post_edit', methods: ['GET', 'POST'])]
+public function edit(Post $post, Request $request, EntityManagerInterface $em,PostRepository $postRepos): Response
+{
+    // Crée un formulaire basé sur PostType, pré-rempli avec le Post existant
+    $form = $this->createForm(PostType::class, $post);
+    $form->handleRequest($request);
+
+    if ($form->isSubmitted() && $form->isValid()) {
+        $em->flush(); // Pas besoin de persist(), l'entité est déjà connue de Doctrine
+        return $this->redirectToRoute('post_index');
     }
+
+    return $this->render('post/index.html.twig', [
+        'form' => $form->createView(),
+        'post' => $post,
+        'posts' => $postRepos->findAll() 
+    ]);
+}
+
+
+
+
+
+
+
 
 
 

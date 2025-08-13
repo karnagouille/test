@@ -4,14 +4,21 @@
 <h1>Tout mes post</h1>
 
 {% for post in posts %}
-  <h2>{{ post.title }}</h2>
-  <p>{{ post.content }}</p>
+<h2>{{ post.title }}</h2>
+<p>{{ post.content }}</p>
 
+<form method="post" action="{{ path('post_edit', {'id': post.id}) }}">
+    <input type="text" name="post[title]" value="{{ post.title }}">
+    <textarea name="post[content]">{{ post.content }}</textarea>
+    <button type="submit">Modifier</button>
+</form>
 
-    <form method="post" action="{{ path('post_remove', {'id': post.id}) }}">
-      <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ post.id) }}">
-      <button type="submit">Supprimer</button>
-      </form>
+<form method="post" action="{{ path('post_remove', {'id': post.id}) }}">
+    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ post.id) }}">
+    <button type="submit">Supprimer</button>
+</form>
 {% endfor %}
+    
+
 
 {% endblock %}
